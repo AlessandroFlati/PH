@@ -1,5 +1,7 @@
 from enum import Enum, IntEnum
 
+from Exceptions import GameEndedException
+
 
 class Ranking(IntEnum):
     HIGH_CARD = 1
@@ -52,12 +54,18 @@ class Suit(Enum):
         return self.symbol
 
 
-class Turn(IntEnum):
+class GameRound(IntEnum):
     PREFLOP = 0
     FLOP = 1
     TURN = 2
     RIVER = 3
     END = 4
+
+    def next(self):
+        if self.value != 4:
+            return GameRound(self.value+1)
+        else:
+            raise GameEndedException
 
     def __str__(self):
         return self.name
