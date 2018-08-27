@@ -1,17 +1,17 @@
 from itertools import cycle
 
+from Board import Board
 from Enums import GameRound
 from Game import Game
 
 
 class Table:
-    def __init__(self, board=None, size=2, players=None, dealerPosition=0, pot=0, ante=0, bigBlind=0):
+    def __init__(self, board=Board(), players=None, dealerPosition=0, ante=0, bigBlind=0):
         self.board = board
-        self.size = size
-        self.pot = pot
         self.ante = ante
         self.bigBlind = bigBlind
-        self.players = players
+        self.players = sorted(players, key=lambda x: x.positionAtTable)
+        self.size = len(self.players)
         for player in self.players:
             player.table = self
         self.dealerPosition = dealerPosition
@@ -28,6 +28,10 @@ class Table:
 
     def handleNewGame(self):
         self.advanceDealer()
+        for player in self.players:
+            player.game = None
+            player.cards = None
+        self.board = Board()
         self.game = Game(table=self)
 
     def firstToSpeak(self):

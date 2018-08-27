@@ -1,8 +1,12 @@
-from Exceptions import StackIsLessThanBigBlind, StackIsLessThanSmallBlind
+from itertools import combinations
+
+from scipy.special import comb
+
+from Cards import FullHand, Cards
+from Exceptions import StackIsLessThanBigBlind, StackIsLessThanSmallBlind, PlayerIsNotInAGameException
 
 
 class Player:
-
     def __init__(self, name="", positionAtTable=0, stack=0):
         self.name = name
         self.stack = stack
@@ -28,26 +32,52 @@ class Player:
             self.currentBet = self.table.bigBlind
 
     def putSmallBlind(self):
-        if self.stack < self.table.bigBlind/2:
+        if self.stack < self.table.bigBlind / 2:
             self.currentBet = self.stack
             self.stack = 0
             raise StackIsLessThanSmallBlind
         else:
-            self.stack -= self.table.bigBlind/2
-            self.currentBet = self.table.bigBlind/2
+            self.stack -= self.table.bigBlind / 2
+            self.currentBet = self.table.bigBlind / 2
+
+    def getBestFiveCards(self):
+        cards = Cards(*(list(self.hand) + self.table.board))
+        fhs = [None]*comb(len(cards), 5, exact=True, repetition=False)
+        for i, c in enumerate(combinations(cards, 5)):
+            fhs[i] = FullHand(*c)
+        return sorted(fhs, key=lambda x: x.point, reverse=True)[0]
+
+    def setHand(self, *cards):
+        if self.game is None:
+            raise PlayerIsNotInAGameException
+        self.hand = Cards(*cards)
+        for card in cards:
+            self.game.deck.remove(card)
+
+    def setHandIgnoringDiscard(self, *cards):
+        if self.game is None:
+            raise PlayerIsNotInAGameException
+        self.hand = Cards(*cards)
 
     def play(self):
+        if not self.isActive:
+            pass
         self.hasSpoken = True
+        self.fold()
         pass  # TODO
 
     def fold(self):
         self.isActive = False
-        self.table.activePlayers.remove(self)
+        print("{} has folded.".format(self))
+
+    def isReadyToProceedToNextRound(self):
+        return self.hasSpoken and ((not self.isActive) or self.currentBet == self.game.maxBet or self.stack == 0)
 
     def __str__(self):
         if self.name != "":
             representation = self.name
         else:
-            representation = "Player #" + str(self.positionAtTable+1)
-        representation += ": {}".format(self.hand)
+            representation = "Player #" + str(self.positionAtTable + 1)
+        if self.hand is not None:
+            representation += " - " + str(Cards(*self.hand))
         return representation

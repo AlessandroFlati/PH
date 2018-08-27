@@ -63,7 +63,7 @@ class GameRound(IntEnum):
 
     def next(self):
         if self.value != 4:
-            return GameRound(self.value+1)
+            return GameRound(self.value + 1)
         else:
             raise GameEndedException
 

@@ -24,3 +24,15 @@ class StackIsLessThanSmallBlind(NameError):
 
 class GameShouldHaveEndedException(NameError):
     pass
+
+
+class PlayerIsNotInAGameException(NameError):
+    pass
+
+
+class BoardIsNotInAGameException(NameError):
+    pass
+
+
+class IncorrectNumberOfCardsFlippedException(NameError):
+    pass
